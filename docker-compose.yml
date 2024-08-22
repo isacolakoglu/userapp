@@ -1,0 +1,53 @@
+services:
+  java_db:
+    container_name: java_db
+    image: postgres:16
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: isa123
+      POSTGRES_DB: persondb
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./toolQuery.sql:/docker-entrypoint-initdb.d/toolQuery.sql
+    networks:
+      - my_network
+
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    ports:
+      - "1234:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: isa@example.com
+      PGADMIN_DEFAULT_PASSWORD: isa123
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - my_network
+
+  java_app:
+    container_name: java_app
+    image: java_app:1.0.0
+    build: .
+    ports:
+      - 8080:8080
+    environment:
+      - DATABASE_URL=jdbc:postgresql://java_db:5432/persondb
+      - DATABASE_USERNAME=postgres
+      - DATABASE_PASSWORD=isa123
+    depends_on:
+      - java_db
+    volumes:
+      - my_volume:/path/in/container
+    networks:
+      - my_network
+
+volumes:
+  pgdata:
+  pgadmin_data:
+  my_volume:
+
+networks:
+  my_network:
